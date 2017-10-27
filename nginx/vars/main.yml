@@ -1,0 +1,7 @@
+---
+user: www
+worker_processes: 4
+num_cpus: 4
+max_open_file: 65535
+root: /data
+inclued_dir: /etc/nginx/conf.d

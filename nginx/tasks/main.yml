@@ -1,0 +1,13 @@
+---
+- name: Create a user running nginx
+  user: name=www shell=/sbin/nologin
+- name: ensure nginx is at the latest version
+  yum: name=nginx state=latest
+- name: sync the nginx config file
+  template: src=nginx.conf.j2 dest=/etc/nginx/nginx.conf
+  notify:
+  -  restart nginx
+- name: ensure nginx is running
+  service: name=nginx state=started
+- name: chkconfig nginx on
+  service: name=nginx enabled=yes
