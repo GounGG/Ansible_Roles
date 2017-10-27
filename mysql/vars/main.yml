@@ -1,0 +1,31 @@
+---
+user: mysql
+group: mysql
+mysql_package: mysql-5.6.16
+mysql_archive_package: mysql-5.6.16.tar.gz
+remote_package_dir: /usr/local/src/
+
+
+db_home: /usr/local/mysql
+db_base: /data/mysql
+db_binlog: /data/mysql/binlog
+db_relaylog: /data/mysql/relaylogcho
+
+PATH: $PATH:/usr/local/mysql/bin
+
+package:
+  - make
+  - gcc-c++
+  - cmake
+  - bison
+  - bison-devel
+  - ncurses-devel
+  - gcc
+  - autoconf
+  - automake
+  - zlib*  
+  - libxml* 
+  - libmcrypt* 
+  - libtool-ltdl-devel* 
+  - openssl
+  - openssl-devel

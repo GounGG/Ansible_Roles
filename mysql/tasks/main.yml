@@ -1,0 +1,39 @@
+- name: Installation dependency package
+  yum: name="{{ item }}" state=latest
+  with_items: "{{ package }}"
+- name: create mysql group
+  group: name="{{ group }}" state=present
+- name: create mysql user
+  user: name="{{ user }}" group="{{ group }}" shell=/bin/false
+- name: create database home directory
+  file: path="{{ db_home }}" owner="{{ user }}" group="{{ group }}" state=directory recurse=yes
+- name: create database data base directory
+  file: path="{{ db_base }}" owner="{{ user }}" group="{{ group }}" state=directory recurse=yes
+- name: create database binlog directory
+  file: path="{{ db_binlog }}" owner="{{ user }}" group="{{ group }}" state=directory recurse=yes
+- name: create database relaylog directory
+  file: path="{{ db_relaylog }}" owner="{{ user }}" group="{{ group }}" state=directory recurse=yes
+- name: uncompress install package to remote host
+  unarchive: src="{{ mysql_archive_package }}" dest="{{ remote_package_dir }}"
+- name: Compiling mysql
+  shell: cmake -DCMAKE_INSTALL_PREFIX="{{ db_home }}" -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DWITH_EXTRA_CHARSETS=all -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DWITH_SSL=yes -DWITH_EMBEDDED_SERVER=1 -DENABLED_LOCAL_INFILE=1 -DMYSQL_DATADIR="{{ db_base }}"
+  args:
+    chdir: "{{ remote_package_dir }}{{ mysql_package }}" 
+  register: result01
+- name: Compiling install mysql
+  shell: make && make install
+  args:
+    chdir: "{{ remote_package_dir}}{{ mysql_package }}"
+  when: result01 | success
+- name: sync startup script
+  template: src=mysqld.j2 dest=/etc/rc.d/init.d/mysqld mode=0750
+- name: sync my.cnf file
+  template: src=my.cnf.j2 dest=/etc/my.cnf
+- name: init mysql database
+  shell: "{{ db_home }}/scripts/mysql_install_db --basedir={{ db_home }} --datadir={{ db_base }} --user={{ user }}"
+- name: Add environment variables
+  shell: echo export PATH=$PATH:/usr/local/mysql/bin >>/etc/profile && source /etc/profile
+- name: start service
+  service: name=mysqld state=started enabled=yes
+- name: add database user
+  shell: mysqladmin -u root password 'sh%21store'
