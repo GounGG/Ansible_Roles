@@ -1,3 +1,13 @@
 [mysqld]
 datadir={{ db_base }}
-sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES 
+sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
+log-bin=mysql-bin
+relay-log = mysql-relay-bin
+binlog_format = mixed
+{% if id is none %}
+{% else %}
+server-id={{ id }}
+replicate-wild-ignore-table=mysql.%      
+replicate-wild-ignore-table=test.%
+replicate-wild-ignore-table=information.%
+{% endif %}
