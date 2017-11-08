@@ -10,3 +10,6 @@
   template: src=my.cnf.j2 dest=/etc/my.cnf
   notify:
   - restart mysqld
+- name: create remote connections user
+  mysql_user: name=bob password=12345 host=% priv='*.*:ALL,GRANT' state=present login_unix_socket=/tmp/mysql.sock login_user=root login_password=sh%21store
+

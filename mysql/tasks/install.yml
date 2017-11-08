@@ -38,3 +38,7 @@
   service: name=mysqld state=started enabled=yes
 - name: add database user
   shell: "{{ db_home }}/bin/mysqladmin -u root password 'sh%21store'"
+  register: check_local_user
+- name: create remote connections user
+  mysql_user: name=bob password=12345 host=% priv='*.*:ALL,GRANT' state=present login_unix_socket=/tmp/mysql.sock login_user=root login_password=sh%21store
+  when: check_local_user | success
