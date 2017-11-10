@@ -1,0 +1,8 @@
+---
+# tasks file for pgsql
+- name: Check whether the pgsql is installed
+  shell: test -d "{{ base }}"
+  register: result
+- name: include install file
+  include: install.yml
+  when: result | failed

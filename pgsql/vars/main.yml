@@ -1,0 +1,6 @@
+---
+# vars file for pgsql
+base: /data/pgsql
+data: /data/pgsqldata
+user: postgres
+passwd: trade

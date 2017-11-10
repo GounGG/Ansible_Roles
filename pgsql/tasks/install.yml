@@ -1,0 +1,49 @@
+---
+- name: installation dependency package
+  yum: name={{ item }} state=latest
+  with_items:
+  - automake 
+  - autoconf 
+  - libtool 
+  - make
+  - readline 
+  - readline-devel
+  - openssl
+  - openssl-devel
+
+- name: create a user running pgsql
+  user: name="{{ user }}" shell=/bin/bash password="{{ passwd |password_hash('sha512') }}"
+
+- name: Unpack the installation package to the remote host
+  unarchive: src=postgresql-10.0.tar.gz dest=/usr/local/src/
+
+- name: Complie the source code
+  shell: ./configure --prefix="{{ base }}"
+  args:
+    chdir: /usr/local/src/postgresql-10.0
+
+- name: install
+  shell: make && make install
+  args:
+    chdir: /usr/local/src/postgresql-10.0
+
+- name: Add environment variable
+  shell: echo -e "export PGHOME={{ base }}\nexport PGDATA={{ data }}\nexport PATH=\$PATH:\$HOME/bin:\$PGHOME/bin" >> "/home/{{ user }}/.bash_profile" 
+
+- name: create data directory
+  file: path="{{ data }}" owner="{{ user }}" group="{{ user }}" state=directory
+
+- name: Change the base directory owner
+  file: path="{{ base }}" owner="{{ user }}" group="{{ user }}" state=directory
+
+- name: init database
+  shell: "source /home/{{ user }}/.bash_profile && {{ base }}/bin/initdb"
+  become: true
+  become_method: su
+  become_user: "{{ user }}"
+
+- name: startup postargesql
+  shell: "source /home/{{ user }}/.bash_profile && {{ base }}/bin/pg_ctl -D /data/pgsqldata -l logfile start"
+  become: true
+  become_method: su
+  become_user: "{{ user }}"
