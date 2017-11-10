@@ -1,0 +1,42 @@
+---
+- include: package.yml
+
+- name: Verify that the keepalive service already exists
+  shell: test -d "{{ Base }}"
+  register: result
+  ignore_errors: True
+
+- include: install.yml
+  when: result | failed
+
+- name: create configure file directory
+  file: dest=/etc/keepalived state=directory
+
+- name: sync nginx config file template
+  template: src=keepalived.conf.j2 dest=/etc/keepalived/keepalived.conf
+  notify:
+  - restart keepalived
+  when: "'webservers' in group_names" 
+
+- name: sync mysql config file template
+  template: src=db_keepalived.conf.j2 dest=/etc/keepalived/keepalived.conf
+  notify:
+  - restart keepalived
+  when: "'database' in group_names" 
+
+- name: sync pgsql config file template
+  template: src=pg_keepalived.conf.j2 dest=/etc/keepalived/keepalived.conf
+  notify:
+  - restart keepalived
+  when: "'pgsql' in group_names" 
+
+- name: configure the startup file
+  template: src=keepalived.j2 dest=/etc/init.d/keepalived mode=0750
+  notify:
+  - restart keepalived
+
+- name: create command link
+  file: src="{{ Base }}/sbin/keepalived" dest=/usr/sbin/keepalived state=link
+
+- name: startup keepalived service
+  service: name=keepalived state=started enabled=yes

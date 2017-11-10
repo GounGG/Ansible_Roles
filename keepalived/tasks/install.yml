@@ -1,0 +1,15 @@
+- name: unarchive file
+  unarchive: src=keepalived-1.3.5.tar.gz dest=/usr/local
+
+- name: Compile the installation keepalived
+  shell: ./configure --prefix="{{ Base }}" --with-kernel-dir=/usr/src/kernels/`uname -r`
+  args:
+    chdir: /usr/local/keepalived-1.3.5
+
+- name:  The installation process
+  shell: make && make install
+  args:
+    chdir: /usr/local/keepalived-1.3.5
+
+- name: configure the sysconfig file
+  copy: src="{{ Base }}/etc/sysconfig/keepalived" dest=/etc/sysconfig/ remote_src=yes

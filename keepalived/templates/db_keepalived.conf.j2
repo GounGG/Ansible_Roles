@@ -1,0 +1,26 @@
+vrrp_script check_mysqld {
+        script "killall -0 mysqld"          
+        interval 2
+        weight 21
+}
+vrrp_instance VI_3 {
+    state BACKUP    
+    interface {{ interface }}
+    virtual_router_id 52
+    priority {{ priority }}
+    advert_int 2
+    nopreempt
+    authentication {
+        auth_type {{ auth_type }}
+        auth_pass {{ auth_pass }}
+    }
+notify_master "/etc/keepalived/master.sh"
+notify_backup "/etc/keepalived/backup.sh"
+notify_fault "/etc/keepalived/fault.sh"
+track_script {
+check_mysqld
+}
+    virtual_ipaddress {
+        {{ db_vip }}
+    }
+}

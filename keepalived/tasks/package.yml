@@ -1,0 +1,10 @@
+- name: installation dependency package
+  yum: name={{ item }} state=latest
+  with_items:
+    - curl     
+    - libnl3-devel     
+    - iptables-devel     
+    - libnfnetlink-devel 
+    - ipset-devel 
+    - openssl-devel 
+    - net-snmp-devel

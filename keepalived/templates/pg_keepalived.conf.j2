@@ -1,0 +1,25 @@
+vrrp_script check_postgresql {
+        script "killall -0 postgres"          
+        interval 2
+        weight 21
+}
+vrrp_instance VI_3 {
+    state {{ state }}
+    interface {{ interface }}
+    virtual_router_id {{ router_id }}
+    priority {{ priority }}
+    advert_int 2
+    authentication {
+        auth_type {{ auth_type }}
+        auth_pass {{ auth_pass }}
+    }
+notify_master "/etc/keepalived/master.sh"
+notify_backup "/etc/keepalived/backup.sh"
+notify_fault "/etc/keepalived/fault.sh"
+track_script {
+check_postgresql
+}
+    virtual_ipaddress {
+        {{ pg_vip }}
+    }
+}

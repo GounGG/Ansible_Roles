@@ -1,0 +1,5 @@
+---
+web_vip: 192.168.30.225
+db_vip: 192.168.30.226
+pg_vip: 192.168.30.227
+Base: /usr/local/keepalived
