@@ -8,6 +8,11 @@ VIP
 
 服务判断依据：
 组名：
+
+```shell
 [webservers]     nginx服务
+
 [database]       Mysql服务
+
 [pgsql]        postgresql服务
+```
