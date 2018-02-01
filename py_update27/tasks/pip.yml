@@ -1,0 +1,12 @@
+---
+- name: Download pip command package
+  get_url: url=https://bootstrap.pypa.io/get-pip.py dest=/tmp/
+  register: result
+
+- name: Install pip command
+  shell: python get-pip.py
+  args:
+    chdir: /tmp/
+
+- name: Create pip command link
+  file: src=/usr/local/python27/bin/pip2.7 dest=/usr/bin/pip state=link mode=0750 force=yes

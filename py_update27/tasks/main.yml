@@ -1,0 +1,5 @@
+---
+# tasks file for py_update2.7
+- name: Test python version
+  include: py.yml
+  when: ansible_python.version.major == 2 and ansible_python.version.minor == 6
