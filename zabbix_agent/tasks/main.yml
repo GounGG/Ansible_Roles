@@ -1,0 +1,13 @@
+---
+# tasks file for zabbix_agent
+- name: 判断agent是否已经安装?
+  shell: test -d /usr/local/zabbix_agent
+  ignore_errors: True
+  register: result
+
+- name: Zabbix Agent already installed
+  fail: msg="服务已经安装，退出"
+  when: result | success
+
+- name: include installed task file
+  include: instlled.yml

@@ -1,0 +1,36 @@
+---
+- name: create zabbix group
+  group: name=zabbix state=present
+
+- name: create zabbix user
+  user: name=zabbix group=zabbix shell=/sbin/nologin
+
+- name: copy files to remote host
+  unarchive: src=zabbix-3.0.4.tar.gz dest=/tmp/
+
+- name: compile 
+  shell: ./configure --prefix=/usr/local/zabbix_agent --enable-agent
+  args:
+    chdir: /tmp/zabbix-3.0.4
+  register: result
+
+- name: make install
+  shell: make && make install 
+  args:
+    chdir: /tmp/zabbix-3.0.4
+  when: result | success
+
+- name: link zabbix_agentd command
+  file: src=/usr/local/zabbix_agent/sbin/zabbix_agentd path=/usr/local/sbin/zabbix_agentd state=link
+
+- name: create startup script
+  copy: src=/tmp/zabbix-3.0.4/misc/init.d/fedora/core/zabbix_agentd dest=/etc/init.d/zabbix_agentd mode=0750 remote_src=yes
+
+- name: Generate configured file
+  template: src=zabbix_agentd.conf dest=/usr/local/zabbix_agent/etc/zabbix_agentd.conf
+
+- name: starup zabbix agent service
+  service: name=zabbix_agentd state=started enabled=yes
+
+- name: Delete install package files
+  file: path="/tmp/zabbix-3.0.4" state=absent
