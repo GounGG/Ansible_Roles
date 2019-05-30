@@ -1,0 +1,9 @@
+---
+# vars file for elasticsearch
+xms: '14g'
+xmx: '14g'
+data_dir: '/data/sysadmin/service_run_data/es_data'
+log_dir: '/data/sysadmin/service_logs/es_log'
+listen_ip: '0.0.0.0'
+listen_port: '9200'
+cluster_name: 'ulucu'

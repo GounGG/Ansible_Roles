@@ -1,0 +1,91 @@
+---
+# tasks file for elasticsearch
+- name: Settings A single process max virtual memory area count
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: 'vm.max_map_count=262144'
+
+- name: sysctl -p 
+  shell: sysctl -p
+
+#- name: Settings create max process
+#  lineinfile:
+#    path: /etc/security/limits.d/20-nproc.conf
+#    line: '* soft nproc 65536'
+
+#- name: Settings open max files
+#  lineinfile:
+#    path: /etc/security/limits.conf
+#    line: '{{ item }}'
+#  with_items:
+#    - '* soft nofile 65536'
+#    - '* hard nofile 65536'
+#    - '* - memlock unlimited'
+
+- name: See java command
+  shell: java -version
+  ignore_errors: True
+  register: result
+
+- name: Copy jdk file to remote host
+  copy:
+    src: jdk-8u171-linux-x64.rpm
+    dest: /tmp/
+  when: result is failed
+
+- name: Install jdk package
+  yum:
+    name: '/tmp/jdk-8u171-linux-x64.rpm'
+    state: present
+  when: result is failed
+
+- name: Copy es package to remote host
+  copy:
+    src: elasticsearch-5.5.3.rpm
+    dest: /tmp/
+
+- name: Install es server
+  yum:
+    name: '/tmp/elasticsearch-5.5.3.rpm'
+    state: present
+
+- name: Create data and log directory
+  file:
+    name: '{{ item }}'
+    state: directory
+    recurse: yes
+    owner: elasticsearch
+    group: elasticsearch
+  with_items:
+    - "{{ data_dir }}"
+    - "{{ log_dir }}"
+
+- name: Sync jvm config
+  template:
+    src: jvm.options.j2
+    dest: /etc/elasticsearch/jvm.options
+  notify:
+    - Restart es server  
+
+- name: Sync es config
+  template:
+    src: elasticsearch.yml.j2
+    dest: /etc/elasticsearch/elasticsearch.yml
+  notify:
+    - Restart es server
+  tags: Config
+
+- name: Check 9200 port is open
+  wait_for:
+    timeout: 30
+    port: 9200
+    delay: 10
+    ignore_errors: true
+  register: result
+
+- name: start es server
+  service:
+    name: elasticsearch
+    state: started
+    enabled: yes
+  when: result is success
